@@ -1,37 +1,44 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Header from './components/Header'
 import Tasks from './components/Tasks'
 import AddTask from './components/AddTask'
 
 //state gets passed down, actions get passed up
 
+const LOCAL_STORAGE_KEY = 'taskTracker.tasks'
+
 function App() {
   // pair of values: "state variable" in tasks, and a function that updates it in setTasks
   // Argument inside useState() is the initial state
   // Initial declared value of useState is the default state, we modify it with setTasks, and call it with tasks
-  const [tasks, setTasks] = useState(
-    [
-        {
-            id: 1,
-            text: 'Doctors Appointment',
-            day: 'Feb 5th at 2:30pm',
-            reminder: true
-        },
-        {
-            id: 2,
-            text: 'Meeting at School',
-            day: 'Feb 6th at 1:30pm',
-            reminder: true
-        },
-        {
-            id: 3,
-            text: 'Food Shopping',
-            day: 'Feb 5th at 2:30pm',
-            reminder: false
-        }
-    ]
+  const [tasks, setTasks] =
+  // localStorage is always an array
+  // || automatically checks the first value if it is truthy, else runs the second value
+  useState(
+    JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY)) || []
   )
   
+  // This is constantly running, and if useState has an empty array, it will load an empty array
+  // This isn't working, idk why help
+  // useEffect(() => {
+  //   var storedTasks = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY))
+  //   console.log(storedTasks);
+  //   if (storedTasks) {
+  //     setTasks(storedTasks);
+
+  //   }
+  // }, [])
+
+  // useEffect is for sideffects of state
+  // whatever is contained in the second array are dependencies
+  // when something changes in the dependencies, we run the function in useEffect
+  // here, it saves the todos to local storage
+  useEffect(() => {
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(tasks))
+  }, [tasks])
+
+
+
   // on clicking the add button, toggles useState to show the form
   const [showAddTask, setShowAddTask] = useState(false)
 
@@ -42,10 +49,15 @@ function App() {
 
   // Add Task
   const addTask = (task) => {
-    const id = Math.floor(Math.random() * 10000) + 1;
+    // const id = Math.floor(Math.random() * 10000) + 1;
+    let id = 0;
+    if (tasks.length > 0) {
+      id = tasks[tasks.length - 1].id + 1;
+    }
     const newTask = { id, ...task };
     setTasks([...tasks, newTask]);
     console.log(newTask)
+    console.log(tasks);
   }
 
   // Delete Task
